@@ -378,7 +378,6 @@ class Web3Client {
       loadChainIdFromNetwork: fetchChainIdFromNetworkId,
       client: this,
     );
-
     return signTransactionRaw(
       signingInput.transaction,
       signingInput.credentials,

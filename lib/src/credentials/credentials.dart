@@ -33,7 +33,7 @@ abstract class Credentials {
   /// bytes representation of the [eth_sign RPC method](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign),
   /// but without the "Ethereum signed message" prefix.
   /// The [payload] parameter contains the raw data, not a hash.
-  @Deprecated('Please use [signToUint8List]')
+  // @Deprecated('Please use [signToUint8List]')
   Future<Uint8List> sign(
     Uint8List payload, {
     int? chainId,
@@ -54,25 +54,25 @@ abstract class Credentials {
   /// bytes representation of the [eth_sign RPC method](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_sign),
   /// but without the "Ethereum signed message" prefix.
   /// The [payload] parameter contains the raw data, not a hash.
-  Uint8List signToUint8List(
-    Uint8List payload, {
-    int? chainId,
-    bool isEIP1559 = false,
-  }) {
-    final signature =
-        signToEcSignature(payload, chainId: chainId, isEIP1559: isEIP1559);
+  // Uint8List signToUint8List(
+  //   Uint8List payload, {
+  //   int? chainId,
+  //   bool isEIP1559 = false,
+  // }) {
+  //   final signature =
+  //       signToEcSignature(payload, chainId: chainId, isEIP1559: isEIP1559);
 
-    final r = padUint8ListTo32(unsignedIntToBytes(signature.r));
-    final s = padUint8ListTo32(unsignedIntToBytes(signature.s));
-    final v = unsignedIntToBytes(BigInt.from(signature.v));
+  //   final r = padUint8ListTo32(unsignedIntToBytes(signature.r));
+  //   final s = padUint8ListTo32(unsignedIntToBytes(signature.s));
+  //   final v = unsignedIntToBytes(BigInt.from(signature.v));
 
-    // https://github.com/ethereumjs/ethereumjs-util/blob/8ffe697fafb33cefc7b7ec01c11e3a7da787fe0e/src/signature.ts#L63
-    return uint8ListFromList(r + s + v);
-  }
+  //   // https://github.com/ethereumjs/ethereumjs-util/blob/8ffe697fafb33cefc7b7ec01c11e3a7da787fe0e/src/signature.ts#L63
+  //   return uint8ListFromList(r + s + v);
+  // }
 
   /// Signs the [payload] with a private key and returns the obtained
   /// signature.
-  @Deprecated('Please use [signToEcSignature]')
+  // @Deprecated('Please use [signToEcSignature]')
   Future<MsgSignature> signToSignature(
     Uint8List payload, {
     int? chainId,
@@ -81,16 +81,16 @@ abstract class Credentials {
 
   /// Signs the [payload] with a private key and returns the obtained
   /// signature.
-  MsgSignature signToEcSignature(
-    Uint8List payload, {
-    int? chainId,
-    bool isEIP1559 = false,
-  });
+  // MsgSignature signToEcSignature(
+  //   Uint8List payload, {
+  //   int? chainId,
+  //   bool isEIP1559 = false,
+  // });
 
   /// Signs an Ethereum specific signature. This method is equivalent to
   /// [sign], but with a special prefix so that this method can't be used to
   /// sign, for instance, transactions.
-  @Deprecated('Please use [signPersonalMessageToUint8List]')
+  // @Deprecated('Please use [signPersonalMessageToUint8List]')
   Future<Uint8List> signPersonalMessage(Uint8List payload, {int? chainId}) {
     final prefix = _messagePrefix + payload.length.toString();
     final prefixBytes = ascii.encode(prefix);
@@ -104,15 +104,15 @@ abstract class Credentials {
   /// Signs an Ethereum specific signature. This method is equivalent to
   /// [signToUint8List], but with a special prefix so that this method can't be used to
   /// sign, for instance, transactions.
-  Uint8List signPersonalMessageToUint8List(Uint8List payload, {int? chainId}) {
-    final prefix = _messagePrefix + payload.length.toString();
-    final prefixBytes = ascii.encode(prefix);
+  // Uint8List signPersonalMessageToUint8List(Uint8List payload, {int? chainId}) {
+  //   final prefix = _messagePrefix + payload.length.toString();
+  //   final prefixBytes = ascii.encode(prefix);
 
-    // will be a Uint8List, see the documentation of Uint8List.+
-    final concat = uint8ListFromList(prefixBytes + payload);
+  //   // will be a Uint8List, see the documentation of Uint8List.+
+  //   final concat = uint8ListFromList(prefixBytes + payload);
 
-    return signToUint8List(concat, chainId: chainId);
-  }
+  //   return signToUint8List(concat, chainId: chainId);
+  // }
 }
 
 /// Credentials where the [address] is known synchronously.
@@ -202,26 +202,26 @@ class EthPrivateKey extends CredentialsWithKnownAddress {
     return MsgSignature(signature.r, signature.s, chainIdV);
   }
 
-  @override
-  MsgSignature signToEcSignature(
-    Uint8List payload, {
-    int? chainId,
-    bool isEIP1559 = false,
-  }) {
-    final signature = secp256k1.sign(keccak256(payload), privateKey);
+  // @override
+  // MsgSignature signToEcSignature(
+  //   Uint8List payload, {
+  //   int? chainId,
+  //   bool isEIP1559 = false,
+  // }) {
+  //   final signature = secp256k1.sign(keccak256(payload), privateKey);
 
-    // https://github.com/ethereumjs/ethereumjs-util/blob/8ffe697fafb33cefc7b7ec01c11e3a7da787fe0e/src/signature.ts#L26
-    // be aware that signature.v already is recovery + 27
-    int chainIdV;
-    if (isEIP1559) {
-      chainIdV = signature.v - 27;
-    } else {
-      chainIdV = chainId != null
-          ? (signature.v - 27 + (chainId * 2 + 35))
-          : signature.v;
-    }
-    return MsgSignature(signature.r, signature.s, chainIdV);
-  }
+  //   // https://github.com/ethereumjs/ethereumjs-util/blob/8ffe697fafb33cefc7b7ec01c11e3a7da787fe0e/src/signature.ts#L26
+  //   // be aware that signature.v already is recovery + 27
+  //   int chainIdV;
+  //   if (isEIP1559) {
+  //     chainIdV = signature.v - 27;
+  //   } else {
+  //     chainIdV = chainId != null
+  //         ? (signature.v - 27 + (chainId * 2 + 35))
+  //         : signature.v;
+  //   }
+  //   return MsgSignature(signature.r, signature.s, chainIdV);
+  // }
 
   @override
   bool operator ==(Object other) =>
